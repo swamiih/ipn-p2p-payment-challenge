@@ -106,8 +106,12 @@ def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+# P2P payment endpoint used for the integration challenge.
+# Simulates payment processing according to the provided mock API specification.
 @app.post("/api/p2p-payment", response_model=PaymentResponse)
 def create_p2p_payment(payload: PaymentRequest):
+
+     # Ensure clientReference is unique per transaction
     if payload.clientReference in USED_CLIENT_REFERENCES:
         build_error_response(
             error_code="ERR001",
@@ -115,6 +119,7 @@ def create_p2p_payment(payload: PaymentRequest):
             http_status=status.HTTP_409_CONFLICT
         )
 
+    # Simulate insufficient funds scenario for testing purposes
     if payload.amount > Decimal("5000.00"):
         build_error_response(
             error_code="ERR005",
@@ -122,6 +127,7 @@ def create_p2p_payment(payload: PaymentRequest):
             http_status=status.HTTP_402_PAYMENT_REQUIRED
         )
 
+     # Simulate internal processing failure when reference contains "error"
     if "error" in payload.reference.lower():
         build_error_response(
             error_code="ERR006",
@@ -129,7 +135,10 @@ def create_p2p_payment(payload: PaymentRequest):
             http_status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+     # Mark the client reference as used only after validation and processing checks pass
     USED_CLIENT_REFERENCES.add(payload.clientReference)
+
+    # Generate a mock transaction ID for successful payments
     transaction_id = generate_transaction_id()
 
     return PaymentResponse(

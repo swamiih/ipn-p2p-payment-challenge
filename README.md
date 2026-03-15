@@ -1,27 +1,45 @@
-# IPN Developer Integration Challenge — P2P Payment Request Application
+IPN Developer Integration Challenge — P2P Payment Request Application
+Overview
 
-## Overview
 This project is a mock implementation of a Person-to-Person (P2P) payment request flow for the IPN Developer Integration Challenge.
 
-The solution provides:
-- a frontend payment capture form
-- client-side validation
-- a backend API endpoint for processing payment requests
-- structured success and failure responses
-- automated API tests
+The application demonstrates how a client application captures payment details, validates user input, submits a request to an API endpoint, and displays the resulting transaction outcome.
 
----
+The solution includes:
 
-## Technology Stack
-- **Backend:** FastAPI (Python)
-- **Frontend:** HTML, CSS, JavaScript
-- **Validation:** Pydantic
-- **Testing:** Pytest
+A frontend payment capture form
 
----
+Client-side validation
 
-## Project Structure
-```text
+A backend API endpoint for processing payment requests
+
+Structured success and failure responses
+
+Automated API tests
+
+Technology Stack
+
+Backend
+
+FastAPI (Python)
+
+Frontend
+
+HTML
+
+CSS
+
+JavaScript
+
+Validation
+
+Pydantic
+
+Testing
+
+Pytest
+
+Project Structure
 ipn-p2p-challenge/
 │
 ├── app/
@@ -32,17 +50,18 @@ ipn-p2p-challenge/
 │       └── styles.css
 │
 ├── tests/
+│   ├── __init__.py
 │   └── test_api.py
 │
 ├── requirements.txt
 └── README.md
+Application Features
 
-
-Features
+The application provides the following functionality:
 
 Capture P2P payment details through a web form
 
-Generate a client reference automatically
+Generate a client transaction reference
 
 Perform frontend validation before submission
 
@@ -56,9 +75,13 @@ Run automated tests for key scenarios
 
 API Endpoint
 
+Endpoint
+
 POST /api/p2p-payment
 
-Request Body
+Requests and responses are exchanged in JSON format.
+
+Example Request Body
 {
   "clientReference": "REF-1001",
   "senderAccountNumber": "1234567890",
@@ -67,7 +90,6 @@ Request Body
   "currency": "NAD",
   "reference": "Lunch payment"
 }
-
 Successful Response
 {
   "status": "SUCCESS",
@@ -75,7 +97,6 @@ Successful Response
   "transactionId": "TXN-20260314-ABC12345",
   "message": "Payment processed successfully."
 }
-
 Failed Response Example
 {
   "status": "FAILED",
@@ -83,140 +104,192 @@ Failed Response Example
   "transactionId": null,
   "message": "Insufficient funds."
 }
-
 Validation Rules
 
-The following validation rules are enforced:
+The application enforces the following validation rules:
 
-clientReference is required
+clientReference
 
-senderAccountNumber must be numeric and at least 10 digits
+Required
 
-receiverAccountNumber must be numeric and at least 10 digits
+Must be unique per transaction
 
-sender and receiver account numbers must be different
+senderAccountNumber
 
-amount must be greater than 0
+Numeric only
 
-currency must be NAD
+Minimum length: 10
 
-reference must not be empty and must not exceed 50 characters
+receiverAccountNumber
 
+Numeric only
 
-Business Rules / Simulations
+Minimum length: 10
 
-The following business rules were implemented for the mock processing flow:
+Account numbers
 
-Duplicate client reference
+Sender and receiver must be different
 
-If the same clientReference is submitted again, the request fails with ERR001.
+amount
 
-Insufficient funds simulation
+Must be greater than 0
 
-If amount > 5000.00, the request fails with ERR005.
+currency
 
-Internal processing error simulation
+Must equal NAD
 
-If the payment reference contains the word error, the request fails with ERR006.
+reference
 
+Must not be empty
 
-Assumptions Made
+Maximum length: 50 characters
 
-The challenge allows reasonable assumptions because external live integration is out of scope.
+Business Rules / Simulation
 
-The following assumptions were applied:
+Because the challenge does not involve a real payment system, several rules simulate payment outcomes.
 
-Duplicate client references are rejected within the current application session.
+Duplicate Client Reference
 
-Amounts greater than NAD 5000.00 simulate insufficient funds.
+If the same clientReference is submitted more than once, the transaction fails with:
 
-A payment reference containing the word "error" simulates an internal processing failure.
+ERR001 – Duplicate client reference
+Insufficient Funds Simulation
 
-Transaction IDs are generated locally for mock processing.
+To simulate insufficient funds:
 
-Database persistence, authentication, encryption, and live IPN integration are intentionally excluded as they are outside the challenge scope
+amount > 5000.00
 
+returns:
 
-How to Run the Application
+ERR005 – Insufficient funds
+Internal Processing Error Simulation
 
+If the payment reference contains the word "error", the request returns:
+
+ERR006 – Internal processing error
+
+This allows testing of server-side failure scenarios.
+
+Assumptions
+
+The challenge allows reasonable assumptions where integration details are not specified.
+
+The following assumptions were made:
+
+The API endpoint is implemented locally for simulation purposes
+
+Duplicate client references are tracked in memory during the application session
+
+Amounts greater than NAD 5000.00 simulate insufficient funds
+
+A payment reference containing the word "error" simulates an internal processing failure
+
+Transaction IDs are generated locally for successful payments
+
+The following items are intentionally excluded as they are outside the challenge scope:
+
+Database persistence
+
+Authentication or authorization
+
+Encryption or message signing
+
+Integration with live IPN systems
+
+Setup Instructions
 1. Create a virtual environment
 python -m venv venv
-
 2. Activate the virtual environment
 
 Windows CMD
+
 venv\Scripts\activate
 
 PowerShell
-venv\Scripts\Activate.ps1
 
+venv\Scripts\Activate.ps1
 3. Install dependencies
 pip install -r requirements.txt
-
 4. Run the application
 uvicorn app.main:app --reload
-
-5. Open in browser
+5. Open the application
 http://127.0.0.1:8000
+6. API Documentation
 
-6. Open API docs
+FastAPI provides interactive API documentation.
+
+Open:
+
 http://127.0.0.1:8000/docs
+Running Tests
 
+Automated tests are implemented using pytest.
 
-How to Run Tests
-Bash
+Run tests with:
+
 python -m pytest
+Testing Coverage
 
+The automated tests cover the following scenarios:
+
+Successful payment processing
+
+Duplicate client reference rejection
+
+Insufficient funds simulation
+
+Internal processing error simulation
+
+Validation failure for identical sender and receiver accounts
+
+Validation failure for unsupported currency
 
 Design Notes
 
-This solution was intentionally kept simple, but structured in a way that reflects good engineering practice:
+The solution was intentionally kept simple but structured to reflect good engineering practices:
 
-clear separation between frontend and backend responsibilities
+Clear separation between frontend and backend responsibilities
 
-explicit validation rules using Pydantic
+Explicit validation rules using Pydantic
 
-structured error handling
+Structured error handling
 
-reusable helper functions for payment processing responses
+Reusable helper functions for payment responses
 
-deterministic simulation rules for negative-path testing
+Deterministic simulation rules for negative-path testing
 
-automated tests for both success and failure scenarios
-
-
+Automated tests for both success and failure scenarios
 
 Possible Production Enhancements
 
-If this were extended into a production-ready system, the following improvements would be recommended:
+If extended into a production-ready system, the following improvements would be recommended:
 
-persistent storage for transactions and client references
+Persistent storage for transactions and client references
 
-proper authentication and authorization
+Authentication and authorization mechanisms
 
-audit logging and correlation IDs
+Audit logging and correlation IDs
 
-integration with external payment rails or bank services
+Integration with external payment rails or banking systems
 
-secure secret management
+Secure secret management
 
-retry and circuit-breaker patterns for downstream service calls
+Retry and circuit-breaker patterns for downstream services
 
 CI/CD pipeline automation
 
-monitoring and alerting
+Monitoring and alerting
 
+My honest feedback
 
-## Testing Coverage
+This README is now very strong:
 
-The following scenarios are covered by automated tests:
+clear structure
 
-- Successful payment processing
-- Duplicate client reference rejection
-- Insufficient funds simulation
-- Internal processing error simulation
-- Validation failure for identical sender and receiver accounts
-- Validation failure for unsupported currency
+professional formatting
 
-Tests are implemented using **pytest** and executed using:
-python -m pytest
+covers assumptions
+
+explains simulation rules
+
+includes setup and testing instructions
