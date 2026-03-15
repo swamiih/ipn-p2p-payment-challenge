@@ -1,0 +1,154 @@
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --text: #1b2430;
+  --muted: #5b6777;
+  --border: #d9e1ea;
+  --primary: #0b63ce;
+  --primary-dark: #084b9a;
+  --success-bg: #edfdf3;
+  --success-border: #1f9254;
+  --error-bg: #fff1f3;
+  --error-border: #d92d20;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 20px 40px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+  margin-bottom: 20px;
+}
+
+h1, h2 {
+  margin-top: 0;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+input {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 99, 206, 0.12);
+}
+
+.error {
+  color: var(--error-border);
+  font-size: 12px;
+  min-height: 18px;
+  margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--primary);
+  color: white;
+}
+
+button:hover {
+  background: var(--primary-dark);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.hidden {
+  display: none;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.success {
+  border-left: 6px solid var(--success-border);
+  background: var(--success-bg);
+}
+
+.failed {
+  border-left: 6px solid var(--error-border);
+  background: var(--error-bg);
+}
+
+@media (max-width: 720px) {
+  .grid,
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}

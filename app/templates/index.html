@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPN P2P Payment</title>
+  <link rel="stylesheet" href="../static/style.css" />
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>P2P Payment Request</h1>
+      <p class="subtitle">Capture and submit a mock person-to-person payment.</p>
+
+      <form id="paymentForm" novalidate>
+        <div class="grid">
+          <div class="field">
+            <label for="clientReference">Client Reference</label>
+            <input type="text" id="clientReference" name="clientReference" placeholder="REF-1001" maxlength="50" />
+            <small class="error" id="clientReferenceError"></small>
+          </div>
+
+          <div class="field">
+            <label for="currency">Currency</label>
+            <input type="text" id="currency" name="currency" value="NAD" />
+            <small class="error" id="currencyError"></small>
+          </div>
+
+          <div class="field">
+            <label for="senderAccountNumber">Sender Account Number</label>
+            <input type="text" id="senderAccountNumber" name="senderAccountNumber" placeholder="1234567890" />
+            <small class="error" id="senderAccountNumberError"></small>
+          </div>
+
+          <div class="field">
+            <label for="receiverAccountNumber">Receiver Account Number</label>
+            <input type="text" id="receiverAccountNumber" name="receiverAccountNumber" placeholder="0987654321" />
+            <small class="error" id="receiverAccountNumberError"></small>
+          </div>
+
+          <div class="field">
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" name="amount" step="0.01" min="0.01" placeholder="150.00" />
+            <small class="error" id="amountError"></small>
+          </div>
+
+          <div class="field full-width">
+            <label for="reference">Payment Reference</label>
+            <input type="text" id="reference" name="reference" placeholder="Lunch payment" />
+            <small class="error" id="referenceError"></small>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" id="generateRefBtn">Generate Client Ref</button>
+          <button type="submit" id="submitBtn">Submit Payment</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card hidden" id="resultCard">
+      <h2>Transaction Result</h2>
+      <div class="result-grid">
+        <div>
+          <span class="label">Status</span>
+          <p id="resultStatus">-</p>
+        </div>
+        <div>
+          <span class="label">Transaction ID</span>
+          <p id="resultTransactionId">-</p>
+        </div>
+        <div id="errorCodeGroup">
+          <span class="label">Error Code</span>
+          <p id="resultErrorCode">-</p>
+        </div>
+        <div class="full-width">
+          <span class="label">Message</span>
+          <p id="resultMessage">-</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("paymentForm");
+    const resultCard = document.getElementById("resultCard");
+    const generateRefBtn = document.getElementById("generateRefBtn");
+    const submitBtn = document.getElementById("submitBtn");
+    const errorCodeGroup = document.getElementById("errorCodeGroup");
+
+    function generateClientReference() {
+      const now = new Date();
+      const date = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
+      const time = `${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}${String(now.getSeconds()).padStart(2, "0")}`;
+      return `REF-${date}-${time}`;
+    }
+
+    function clearErrors() {
+      document.querySelectorAll(".error").forEach(el => el.textContent = "");
+    }
+
+    function setError(fieldId, message) {
+      document.getElementById(fieldId + "Error").textContent = message;
+    }
+
+    function validateForm(data) {
+      clearErrors();
+      let isValid = true;
+      const accountRegex = /^\d{10,}$/;
+
+      if (!data.clientReference.trim()) {
+        setError("clientReference", "Client reference is required.");
+        isValid = false;
+      }
+
+      if (!accountRegex.test(data.senderAccountNumber)) {
+        setError("senderAccountNumber", "Must be numeric and at least 10 digits.");
+        isValid = false;
+      }
+
+      if (!accountRegex.test(data.receiverAccountNumber)) {
+        setError("receiverAccountNumber", "Must be numeric and at least 10 digits.");
+        isValid = false;
+      }
+
+      if (data.senderAccountNumber === data.receiverAccountNumber) {
+        setError("receiverAccountNumber", "Sender and receiver must be different.");
+        isValid = false;
+      }
+
+      if (!data.amount || Number(data.amount) <= 0) {
+        setError("amount", "Amount must be greater than 0.");
+        isValid = false;
+      }
+
+      if (data.currency !== "NAD") {
+        setError("currency", "Currency must be NAD.");
+        isValid = false;
+      }
+
+      if (!data.reference.trim()) {
+        setError("reference", "Reference is required.");
+        isValid = false;
+      } else if (data.reference.trim().length > 50) {
+        setError("reference", "Reference must not exceed 50 characters.");
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    function normalizeResponse(data) {
+      return data.detail ? data.detail : data;
+    }
+
+    function showResult(rawData) {
+      const data = normalizeResponse(rawData);
+
+      resultCard.classList.remove("hidden", "success", "failed");
+
+      document.getElementById("resultStatus").textContent = data.status || "-";
+      document.getElementById("resultTransactionId").textContent = data.transactionId || "-";
+      document.getElementById("resultMessage").textContent = data.message || "-";
+
+      if (data.status === "SUCCESS") {
+        resultCard.classList.add("success");
+        errorCodeGroup.classList.add("hidden");
+      } else {
+        resultCard.classList.add("failed");
+        errorCodeGroup.classList.remove("hidden");
+        document.getElementById("resultErrorCode").textContent = data.errorCode || "-";
+      }
+    }
+
+    generateRefBtn.addEventListener("click", () => {
+      document.getElementById("clientReference").value = generateClientReference();
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("clientReference").value = generateClientReference();
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      payload.amount = Number(payload.amount);
+
+      if (!validateForm(payload)) {
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      try {
+        const response = await fetch("/api/p2p-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        showResult(data);
+      } catch (error) {
+        showResult({
+          status: "FAILED",
+          errorCode: "ERR006",
+          transactionId: null,
+          message: "Unable to reach the payment service."
+        });
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Payment";
+      }
+    });
+  </script>
+</body>
+</html>
